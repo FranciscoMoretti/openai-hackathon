@@ -16,9 +16,17 @@ Active reference: `wander-flat-map-concept.png`, revised with the built-in Image
 
 ### Approved MVP extension: Three.js and OpenAI voice
 
-The user approved this extension on 1 November 2026; it is the next implementation target. Preserve the flat north-up map and optional perspective preference above. Add actual stylized Three.js landmark geometry on the geographic map, beginning with one complete Big Ben experience. As the reviewed OpenAI narration explains the name, an illustrative cutaway reveals the bell. Visual cues follow audio playback time, including pause/resume/restart and landmark changes. Camera changes into perspective require an explicit user choice; reduced-motion mode uses stable views and simple highlights.
+Earlier visual proposal: [Big Ben reveal storyboard](wander-big-ben-reveal-concept.png), generated on 1 November 2026. The user subsequently simplified the direction to exterior-only models with narration-led camera stops. The storyboard's bell cutaway is superseded; its map-to-close-up flow and visual styling remain useful references. This is a concept image, not a screenshot of implemented Three.js or OpenAI playback. Implementation should preserve real coordinates and use a reviewed landmark model. Earlier concept images retain their original language controls as historical references; the live app is English-only.
+
+The user approved this extension on 1 November 2026; it is the next implementation target. Preserve the flat north-up map and optional perspective preference above. Add actual stylized, exterior-only Three.js landmark geometry on the geographic map, beginning with one complete Big Ben experience. In Look closer, the story guides the camera between three or four composed views of exterior details. Candidate Big Ben views include the whole tower, clock face and surrounding stonework, upper tower exterior, and wider Parliament setting. Match each shot to the reviewed narration and hold the view between gentle transitions. No continuous orbit, interior geometry, cutaways or moving building parts. Camera cues follow audio playback time, including pause/resume/restart and landmark changes. Entering the guided perspective requires an explicit user choice; ordinary map listening leaves the navigation view alone. Reduced-motion mode uses a stable view and simple highlights.
 
 Provide reviewed English OpenAI recordings for all five landmarks. Extend the landmark treatment after the first scene works, with the London Eye next. Keep current illustrated miniatures as fallbacks. Label illustrative reconstructions and AI narration accurately. Live voice conversation remains after the MVP. See [the updated scope and acceptance criteria](../mvp.md).
+
+### Current close-up implementation
+
+Big Ben now has a dedicated, full-screen Look closer experience. The geographic map keeps its illustrations; the separate Three.js scene supplies the exterior tower, four composed views, drag-to-inspect interaction and shared narration controls. On desktop, chapter navigation sits beside the model; on phones, it becomes a four-item strip above the caption and player. The cream stone, green-gray roof, brass trim and drawn clock faces are code-authored, illustrative geometry rather than a precise architectural reconstruction. No interior is modelled.
+
+Device speech is the user-approved audio fallback for this iteration and is labeled as such. Sentence-start events drive the detail changes instead of invented audio timestamps. The camera eases between views over 1.35 seconds, pauses with playback, and stays fixed for reduced motion. WebGL failure leaves a photograph and the transcript usable. Reviewed OpenAI recordings and more landmark models remain follow-up work.
 
 ### Original image assets
 

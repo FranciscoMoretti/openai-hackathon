@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { splitStory } from '../lib/story-scenes';
 
 type Status = 'idle' | 'starting' | 'playing' | 'paused' | 'complete';
 type AudioError = 'noSpeech' | 'noVoice' | 'speechFailed' | null;
@@ -7,6 +8,9 @@ export function useNarration(storyKey: string, paragraphs: string[], onComplete:
   const [status, setStatus] = useState<Status>('idle');
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<AudioError>(null);
+  const [sentenceIndex, setSentenceIndex] = useState(0);
+  const startAt = useRef(0);
+  const sentences = splitStory(paragraphs);
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const run = useRef(0);
   const current = useRef<SpeechSynthesisUtterance | null>(null);
@@ -31,7 +35,7 @@ export function useNarration(storyKey: string, paragraphs: string[], onComplete:
   }, [supported]);
 
   useEffect(() => {
-    stop(); setStatus('idle'); setProgress(0); setError(null);
+    stop(); startAt.current = 0; setSentenceIndex(0); setStatus('idle'); setProgress(0); setError(null);
     return stop;
   }, [storyKey]);
 
@@ -39,16 +43,18 @@ export function useNarration(storyKey: string, paragraphs: string[], onComplete:
     if (!supported) { setError('noSpeech'); return; }
     if (status === 'paused') { window.speechSynthesis.resume(); setStatus('playing'); return; }
     stop();
+    // Some engines retain their paused flag after cancellation or a chapter change.
+    if (window.speechSynthesis.paused) window.speechSynthesis.resume();
     const available = window.speechSynthesis.getVoices();
     const preferred = 'en-GB';
     const matching = available.filter(voice => voice.lang.toLowerCase().startsWith('en'));
     const voice = matching.find(voice => voice.lang === preferred) ?? matching.find(voice => voice.localService) ?? matching[0];
     if (available.length && !voice) { setError('noVoice'); setStatus('idle'); return; }
-    const sentences = paragraphs.flatMap(paragraph => paragraph.match(/[^.!?]+[.!?]+(?:\s|$)|[^.!?]+$/g) ?? [paragraph]).map(x => x.trim());
     const total = sentences.reduce((sum, sentence) => sum + sentence.length, 0);
     const token = run.current;
-    setError(null); setProgress(0); setStatus('starting');
-    let offset = 0;
+    const first = status === 'complete' ? 0 : startAt.current;
+    let offset = sentences.slice(0, first).reduce((sum, sentence) => sum + sentence.length, 0);
+    setError(null); setProgress(offset / total); setStatus('starting');
 
     function speak(index: number) {
       if (token !== run.current) return;
@@ -66,6 +72,7 @@ export function useNarration(storyKey: string, paragraphs: string[], onComplete:
       utterance.onstart = () => {
         if (token !== run.current) return;
         if (startTimeout.current) clearTimeout(startTimeout.current);
+        setSentenceIndex(index);
         setStatus('playing');
       };
       utterance.onboundary = event => {
@@ -81,13 +88,27 @@ export function useNarration(storyKey: string, paragraphs: string[], onComplete:
       utterance.onerror = event => {
         if (token !== run.current || event.error === 'canceled' || event.error === 'interrupted') return;
         if (startTimeout.current) clearTimeout(startTimeout.current);
-        setStatus('idle'); setError(event.error === 'language-unavailable' || event.error === 'voice-unavailable' ? 'noVoice' : 'speechFailed');
+        stop(); setStatus('idle'); setError(event.error === 'language-unavailable' || event.error === 'voice-unavailable' ? 'noVoice' : 'speechFailed');
       };
       window.speechSynthesis.speak(utterance);
     }
-    speak(0);
+    speak(first);
   }
-  function pause() { if (supported) window.speechSynthesis.pause(); setStatus('paused'); }
-  function restart() { stop(); setStatus('idle'); setProgress(0); setError(null); }
-  return { status, progress, error, play, pause, restart, supported, voiceAvailable: voices.some(voice => voice.lang.startsWith('en')) };
+  function pause() {
+    if (status === 'starting') { stop(); setStatus('idle'); return; }
+    if (supported) window.speechSynthesis.pause();
+    setStatus('paused');
+  }
+  function cue(index: number) {
+    stop();
+    const next = Math.max(0, Math.min(sentences.length - 1, index));
+    startAt.current = next;
+    setSentenceIndex(next); setStatus('idle'); setError(null);
+    const total = sentences.reduce((sum, sentence) => sum + sentence.length, 0);
+    setProgress(sentences.slice(0, next).reduce((sum, sentence) => sum + sentence.length, 0) / total);
+  }
+  function restart() { cue(0); }
+  return { status, progress, error, play, pause, restart, cue, sentenceIndex, sentences, supported, voiceAvailable: voices.some(voice => voice.lang.startsWith('en')) };
 }
+
+export type Narration = ReturnType<typeof useNarration>;

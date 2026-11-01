@@ -1,9 +1,11 @@
-import { useState } from 'react';
-import { ArrowRight, BookOpen, Check, ExternalLink, Headphones, LoaderCircle, Pause, Play, RotateCcw } from 'lucide-react';
+import { lazy, Suspense, useState } from 'react';
+import { ArrowRight, BookOpen, Box, Check, ExternalLink, Headphones, LoaderCircle, Pause, Play, RotateCcw } from 'lucide-react';
 import type { Landmark } from '../data/landmarks';
 import { copy } from '../lib/copy';
 import { useNarration } from '../hooks/useNarration';
 import { Dialog } from './Dialog';
+
+const LandmarkExperience = lazy(() => import('./LandmarkExperience').then(module => ({ default: module.LandmarkExperience })));
 
 type Props = { landmark: Landmark; onComplete: () => void; onNext: () => void };
 
@@ -12,6 +14,7 @@ export function StoryCard({ landmark, onComplete, onNext }: Props) {
   const story = landmark.story;
   const narration = useNarration(landmark.id, story.paragraphs, onComplete);
   const [showTranscript, setShowTranscript] = useState(false);
+  const [showExperience, setShowExperience] = useState(false);
   const active = narration.status === 'playing';
   const complete = narration.status === 'complete';
   const label = active ? c.pause : narration.status === 'paused' ? c.resume : complete ? c.replay : c.listen;
@@ -29,6 +32,7 @@ export function StoryCard({ landmark, onComplete, onNext }: Props) {
             <span className="play-icon">{narration.status === 'starting' ? <LoaderCircle className="spin" size={16} /> : active ? <Pause size={15} fill="currentColor" /> : <Play size={15} fill="currentColor" />}</span>{label}
           </button>
           <button className="text-button" onClick={() => setShowTranscript(true)}><BookOpen size={17} />{c.read}</button>
+          {landmark.id === 'big-ben' && <button className="text-button look-closer-button" onClick={() => setShowExperience(true)}><Box size={17} />Look closer</button>}
         </div>
         {(narration.status !== 'idle' || error) && <div className="audio-state">
           {error ? <p role="alert" className="audio-error">{c[error]}</p> : <>
@@ -39,6 +43,7 @@ export function StoryCard({ landmark, onComplete, onNext }: Props) {
         {complete && <button className="next-story" onClick={onNext}>{c.next}<ArrowRight size={17} /></button>}
       </div>
     </section>
+    {showExperience && <Suspense fallback={<div className="experience-loading" role="status">Getting a little closer…</div>}><LandmarkExperience landmark={landmark} narration={narration} onClose={() => setShowExperience(false)} onNext={onNext} /></Suspense>}
     {showTranscript && <Dialog title={c.transcript} closeLabel={c.close} onClose={() => setShowTranscript(false)}>
       <div className="transcript"><span className="story-eyebrow">{landmark.name}</span><h3>{story.title}</h3>{story.paragraphs.map(paragraph => <p key={paragraph}>{paragraph}</p>)}
         <a className="source-link" href={landmark.source.url} target="_blank" rel="noreferrer">{c.source}: {landmark.source.name}<ExternalLink size={15} /></a>
