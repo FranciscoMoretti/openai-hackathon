@@ -4,6 +4,17 @@ A small, working audio walk around Westminster. Open the map, find a landmark, a
 
 Built with Codex during the DevDay Exchange Community Hackathon in London, 1 November 2026.
 
+## Tower Bridge narrated 3D demo
+
+The current single-attraction demo is in [`prototypes/tower-bridge`](prototypes/tower-bridge/README.md). It adds an automatic four-checkpoint audio journey, historical period overlay, construction sequence, moving bridge and ship, and dated machinery/colour changes. It uses a checked-in local narration recording and requires no API key.
+
+```sh
+npm install --prefix prototypes/tower-bridge
+npm run dev --prefix prototypes/tower-bridge
+```
+
+Open http://localhost:5190/. The earlier map app and both Big Ben experiments remain available.
+
 ## Run it
 
 Requires Node.js 22.12+ and npm.
