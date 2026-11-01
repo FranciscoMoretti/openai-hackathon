@@ -3,12 +3,11 @@ import { canSuggestNearby, distanceMetres, nearestLandmark } from './geo';
 import { landmarks, PREVIEW_LOCATION } from '../data/landmarks';
 
 describe('location-based suggestions', () => {
-  it('identifies Big Ben from the Westminster preview without treating other landmarks as nearby', () => {
+  it('identifies Tower Bridge from the demo preview', () => {
     const nearest = nearestLandmark(PREVIEW_LOCATION, landmarks);
-    expect(nearest.landmark.id).toBe('big-ben');
+    expect(nearest.landmark.id).toBe('tower-bridge');
     expect(nearest.distance).toBeGreaterThan(50);
     expect(nearest.distance).toBeLessThan(100);
-    expect(distanceMetres(PREVIEW_LOCATION, landmarks[2].coordinates)).toBeGreaterThan(400);
   });
   it('does not suggest an arrival with stale, inaccurate, distant or future-dated positions', () => {
     expect(canSuggestNearby(80, 15, 100_000, 100_001)).toBe(true);

@@ -1,0 +1,4 @@
+ElevenLabs UI Orb
+Copyright (c) 2025 Eleven Labs Inc.
+Source: https://github.com/elevenlabs/ui/blob/3a28ebab197f8cfa599934f52db12ad1396e54f4/apps/www/registry/elevenlabs-ui/ui/orb.tsx
+Local adaptations: noise texture is served locally, device pixel ratio is capped, and animation can be disabled for reduced motion and paused sessions. Original shaders and agent-state animation are retained.

@@ -1,0 +1,149 @@
+/* Visual treatment only; guide behavior and audio styles live in their own modules. */
+body.tour-shell {
+  --ink: #233e36;
+  --muted: #637367;
+  --line: #e2e3d9;
+  --paper: #faf9f3;
+  --shell-header: 64px;
+  color: var(--ink);
+  background: var(--paper);
+}
+.tour-shell header { background: var(--paper); padding-inline: 26px; }
+.tour-shell .brand { font-size: 23px; }
+.tour-shell .brand svg { width: 18px; height: 18px; }
+.tour-shell .tour-title { font: 21px/1.2 Georgia, serif; letter-spacing: -.5px; }
+.tour-shell main { grid-template-columns: 232px minmax(0, 1fr); }
+.tour-shell aside { background: var(--paper); padding: 27px 16px; }
+.tour-shell .checkpoint-eyebrow { margin: 2px 10px 28px; font-size: 9px; color: #5b6b60; letter-spacing: 1.8px; }
+.tour-shell .checkpoint-eyebrow span { color: #758176; }
+.tour-shell .chapter { position: relative; align-items: flex-start; gap: 12px; padding: 19px 10px; margin: 4px 0; border-radius: 3px 10px 10px 3px; min-height: 88px; }
+.tour-shell .chapter:not(:last-child)::after { content: ''; position: absolute; left: 23px; top: 51px; bottom: -18px; width: 1px; background: #d9ddd2; }
+.tour-shell .chapter .number { display: grid; place-items: center; width: 27px; height: 27px; flex: 0 0 27px; border: 1px solid #d6dccf; border-radius: 50%; font-size: 10px; color: #647363; background: var(--paper); }
+.tour-shell .chapter strong { font-size: 12px; line-height: 1.5; padding-top: 3px; font-weight: 500; }
+.tour-shell .chapter small { margin-top: 7px; font-size: 10px; letter-spacing: .2px; color: #6b796b; }
+.tour-shell .chapter svg { display: none; }
+.tour-shell .chapter:hover { background: #f0f0e7; }
+.tour-shell .chapter.active { background: #e9eddf; box-shadow: inset 2px 0 #8e9e6b; }
+.tour-shell .chapter.active .number { background: #284d3d; border-color: #284d3d; color: #fff; }
+.tour-shell .chapter.active strong { color: #234735; font-weight: 600; }
+.tour-shell .experience { background: #e8e8de; }
+.tour-shell .experience::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, #faf9f340, transparent 23%, transparent 70%, #153f3824); }
+.tour-shell .scene-heading { top: 31px; left: 34px; right: 30px; z-index: 2; }
+.tour-shell .scene-heading > div { padding: 0; background: none; max-width: 100%; }
+.tour-shell .scene-heading > div::before { content: 'TOWER BRIDGE / LONDON'; display: block; font-size: 9px; font-weight: 600; letter-spacing: 2px; color: #667666; margin-bottom: 12px; }
+.tour-shell .scene-heading h2 { font: 32px/1.12 Georgia, serif; letter-spacing: -1px; margin: 0 0 10px; text-wrap: balance; }
+.tour-shell .scene-heading p { font-size: 12px; color: #5d7164; }
+.tour-shell .outline { min-height: 42px; border-color: #82968280; background: #faf9f3c9; box-shadow: 0 3px 8px #28463505; font-size: 11px; padding: 10px 16px; }
+.tour-shell .outline:hover { background: #faf9f3; border-color: #486e55; }
+.tour-shell .hotspot > span { width: 31px; height: 31px; border: 1px solid #faf9f3; background: #faf9f3; color: #2e5143; font-size: 11px; box-shadow: 0 0 0 5px #faf9f32e, 0 4px 12px #153a3829; }
+.tour-shell .hotspot.active > span { background: #254e3c; color: #fff; border: 1px solid #fff; box-shadow: 0 0 0 5px #faf9f340, 0 4px 12px #153a3829; }
+.tour-shell .hotspot:hover > span { transform: scale(1.1); }
+.tour-shell .hotspot small { background: var(--paper); color: #28483b; padding: 10px 12px; border: 1px solid #dce1d4; border-radius: 7px; }
+.tour-shell .era-overlay { left: 34px; bottom: 204px; border: 0; border-left: 2px solid #ab925c; border-radius: 0; background: #faf9f3e8; backdrop-filter: blur(12px); padding: 13px 19px 14px; box-shadow: 0 6px 25px #193e3010; z-index: 2; }
+.tour-shell .era-overlay .era-label { font-size: 8px; letter-spacing: 2px; color: #68745d; }
+.tour-shell .era-overlay #era { font: 42px/1.1 Georgia, serif; letter-spacing: -1.8px; margin: 4px 0 7px; }
+.tour-shell .era-overlay #era-detail { font-size: 10px; color: #546a55; }
+.tour-shell .scene-footer { bottom: 175px; left: 34px; right: 30px; z-index: 2; font-size: 9px; color: #254e45; }
+.tour-shell #voice-guide-slot { max-width: 880px; bottom: 22px; left: 26px; right: 26px; }
+.tour-shell .voice-guide { background: #fafbf5f5; border-color: #fff9; border-radius: 16px; padding: 19px 23px 8px; box-shadow: 0 12px 35px #173e3926; }
+.tour-shell .voice-main { gap: 16px; }
+.tour-shell .voice-presence { width: 46px; height: 46px; background: #e6ebdb; }
+.tour-shell .voice-copy h2 { font-size: 25px; }
+.tour-shell .voice-copy p { color: #5b6d59; }
+.tour-shell .voice-eyebrow { color: #67785a; }
+.tour-shell .voice-bottom { margin-top: 13px; padding-top: 5px; color: #63745d; }
+.tour-shell .voice-primary { min-height: 46px; box-shadow: 0 3px 8px #214d381c; }
+.tour-shell .machinery-panel { z-index: 3; bottom: 204px; border-radius: 12px; background: #faf9f3; box-shadow: 0 10px 30px #183c3220; }
+.tour-shell dialog { background: var(--paper); }
+@media (min-width: 1600px) {
+  .tour-shell .scene-heading { left: 44px; top: 38px; }
+  .tour-shell .scene-heading h2 { font-size: 38px; }
+  .tour-shell .era-overlay, .tour-shell .scene-footer { left: 44px; }
+}
+@media (max-width: 1100px) and (min-width: 761px) {
+  .tour-shell main { grid-template-columns: 205px minmax(0, 1fr); }
+  .tour-shell aside { padding-inline: 10px; }
+  .tour-shell .scene-heading { left: 24px; right: 24px; }
+  .tour-shell .scene-heading h2 { font-size: 28px; }
+  .tour-shell .voice-copy h2 { font-size: 22px; }
+  .tour-shell .voice-presence { display: none; }
+}
+@media (max-width: 760px) {
+  body.tour-shell { --shell-header: 58px; }
+  .tour-shell header { padding-inline: 16px; }
+  .tour-shell main { display: block; }
+  .tour-shell .tour-title { font: 18px Georgia, serif; }
+  .tour-shell .brand { font-size: 21px; gap: 6px; }
+  .tour-shell #tour-chapters-open { font-size: 10px; padding-inline: 4px; }
+  .tour-shell .scene-heading { top: 24px; left: 20px; right: 16px; gap: 10px; }
+  .tour-shell .scene-heading > div { max-width: 100%; }
+  .tour-shell .scene-heading > div::before { font-size: 8px; letter-spacing: 1.5px; margin-bottom: 10px; }
+  .tour-shell .scene-heading h2 { font-size: 27px; max-width: 245px; margin: 0 0 8px; }
+  .tour-shell .scene-heading p { font-size: 11px; }
+  .tour-shell .outline { min-height: 36px; padding: 9px 11px; font-size: 10px; gap: 5px; }
+  .tour-shell .era-overlay { top: 151px; bottom: auto; left: 20px; padding: 8px 12px; }
+  .tour-shell .era-overlay .era-label { font-size: 7px; }
+  .tour-shell .era-overlay #era { font-size: 28px; letter-spacing: -.8px; margin: 3px 0; }
+  .tour-shell .era-overlay #era-detail { font-size: 9px; }
+  .tour-shell #voice-guide-slot { left: 12px; right: 12px; bottom: max(12px, env(safe-area-inset-bottom)); }
+  .tour-shell .voice-guide { padding: 14px 16px 6px; border-radius: 14px; }
+  .tour-shell .voice-main { gap: 10px; }
+  .tour-shell .voice-presence { width: 36px; height: 36px; }
+  .tour-shell .voice-copy { flex-basis: calc(100% - 48px); }
+  .tour-shell .voice-copy h2 { font-size: 22px; margin: 5px 0; }
+  .tour-shell .voice-copy p { font-size: 10px; }
+  .tour-shell .voice-primary { margin-top: 2px; min-height: 42px; }
+  .tour-shell .voice-bottom { margin-top: 8px; font-size: 8px; }
+  .tour-shell .scene-footer { bottom: 212px; left: 20px; right: 20px; font-size: 8px; }
+  .tour-shell .scene-footer > span:last-child { display: none; }
+  .tour-shell .machinery-panel { bottom: 213px; }
+  .tour-shell .shell-chapter-content .chapter::after { display: none; }
+  .tour-shell .shell-chapter-content .chapter { border-radius: 8px; }
+}
+@media (max-height: 700px) and (min-width: 761px) {
+  .tour-shell .scene-heading { top: 20px; }
+  .tour-shell .scene-heading > div::before { margin-bottom: 7px; }
+  .tour-shell .scene-heading h2 { font-size: 26px; }
+  .tour-shell .era-overlay { bottom: 180px; padding: 8px 14px; }
+  .tour-shell .era-overlay #era { font-size: 30px; }
+  .tour-shell .scene-footer { bottom: 152px; }
+  .tour-shell .voice-guide { padding-top: 12px; }
+  .tour-shell .voice-copy h2 { font-size: 22px; }
+}
+@media (max-height: 700px) and (max-width: 760px) {
+  .tour-shell .scene-heading { top: 16px; }
+  .tour-shell .scene-heading h2 { font-size: 23px; }
+  .tour-shell .era-overlay { display: block; top: 117px; padding: 6px 10px; }
+  .tour-shell .era-overlay #era { font-size: 23px; }
+  .tour-shell .era-overlay .era-label, .tour-shell .era-overlay #era-detail { display: none; }
+  .tour-shell .voice-copy p, .tour-shell .voice-presence { display: none; }
+  .tour-shell .voice-copy h2 { font-size: 20px; }
+  .tour-shell .scene-footer { bottom: 172px; }
+}
+/* The guide may grow when it reports a connection state or microphone notice. */
+.tour-shell .scene-footer { bottom: calc(var(--guide-height, 160px) + 34px); }
+.tour-shell .scene-footer > span { background: #faf9f3de; border-radius: 4px; padding: 5px 7px; color: #38584b; }
+.tour-shell .era-overlay, .tour-shell .machinery-panel { bottom: calc(var(--guide-height, 160px) + 76px); }
+@media (max-width: 760px) {
+  .tour-shell .era-overlay { bottom: auto; }
+  .tour-shell .scene-footer { bottom: calc(var(--guide-height, 200px) + 20px); }
+  .tour-shell .machinery-panel { bottom: calc(var(--guide-height, 200px) + 52px); }
+}
+@media (max-height: 500px) and (min-width: 761px) {
+  body.tour-shell { --shell-header: 48px; }
+  .tour-shell .scene-heading { top: 18px; }
+  .tour-shell .scene-heading > div::before { font-size: 8px; margin-bottom: 6px; }
+  .tour-shell .scene-heading h2 { font-size: 22px; max-width: 310px; }
+  .tour-shell #voice-guide-slot { bottom: 12px; }
+  .tour-shell .voice-guide { padding: 10px 16px 4px; border-radius: 12px; }
+  .tour-shell .voice-copy h2 { font-size: 19px; margin: 3px 0; }
+  .tour-shell .voice-copy p, .tour-shell .voice-presence, .tour-shell .voice-eyebrow { display: none; }
+  .tour-shell .voice-primary { min-height: 36px; padding-block: 8px; font-size: 11px; }
+  .tour-shell .voice-bottom { margin-top: 6px; padding-top: 0; font-size: 8px; }
+  .tour-shell .voice-utilities button { min-height: 25px; }
+  .tour-shell .scene-footer { display: none; }
+  .tour-shell .era-overlay { display: flex; left: 24px; bottom: calc(var(--guide-height, 86px) + 24px); padding: 6px 10px; }
+  .tour-shell .era-overlay #era { font-size: 23px; margin: 0; }
+  .tour-shell .era-label, .tour-shell #era-detail { display: none; }
+  .tour-shell .machinery-panel { bottom: calc(var(--guide-height, 86px) + 24px); height: 175px; width: 240px; }
+}

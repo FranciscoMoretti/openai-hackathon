@@ -7,11 +7,14 @@
     "dev": "vite --host 0.0.0.0",
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 0.0.0.0",
-    "test": "vitest run",
+    "test": "vitest run && vitest run server/realtime.test.ts",
     "openai:setup": "bash scripts/setup-openai.sh",
-    "openai:check": "node scripts/check-openai.mjs"
+    "openai:check": "node scripts/check-openai.mjs",
+    "audio:generate": "python3 scripts/generate-tour-audio.py"
   },
   "dependencies": {
+    "@react-three/drei": "^10.7.9",
+    "@react-three/fiber": "^9.8.2",
     "lucide-react": "^0.468.0",
     "maplibre-gl": "^6.16.0",
     "react": "^19.2.0",
@@ -19,6 +22,7 @@
     "three": "^0.187.0"
   },
   "devDependencies": {
+    "@types/node": "^22.20.5",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@types/three": "^0.187.0",

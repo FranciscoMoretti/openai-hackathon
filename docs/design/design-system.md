@@ -1,35 +1,24 @@
-# Wander design system
+# Wander interface
 
-Active reference: `wander-flat-map-concept.png`, revised with the built-in Image Gen tool after the user supplied `../references/landmark-map-reference.png`. `wander-concept.png` is the superseded perspective concept. The user subsequently requested an optional perspective control while retaining top-down navigation as the default.
+The attraction is the main experience. The app opens on the Tower Bridge tour, with a map available through the header. One root application and build serve both views. Earlier concept images are historical design references, not alternative applications.
 
-- Background and panels: true white `#ffffff`; primary `#193c34`; text `#24332f`; sage selection `#e9f0e9`; borders `#e5e9e5`.
-- Typography: Georgia editorial headings and wordmark; system sans-serif controls, labels and body. 40px main heading, 29px story title, 15px body, 12px secondary. Mobile reduces heading/card sizes.
-- Desktop: 68px header, 340px sidebar, full remaining map canvas. Flat north-up geographic map with architectural miniatures, clear streets and a preview/live location point. Story card floats near map bottom with photographic crop, title, summary and primary action. Actual geography replaces the concept's approximate geometry. Optional perspective control is explicitly user-requested.
-- Mobile: compact header, horizontally scrollable landmark list, full map and compact bottom story sheet; transcript opens as a modal. No stacked desktop sidebar taking over the map.
-- Images: real credited landmark photography plus `public/images/landmarks-atlas.png`, a transparent 3×2 Image Gen sprite sheet. Five miniature illustrations anchor to actual coordinates; empty sixth cell. These provide a 3D appearance on the 2D map. Concept photos are illustrative only.
-- Icons: Lucide, 18–20px, 1.7px stroke, green/currentColor; compass brand is code-native SVG.
-- Actions: solid green listen/location buttons, white map controls, subtle selected states, visible keyboard focus. All controls have real actions.
-- Language: English-only for the hackathon. Omit the language selector shown in the earlier concept images.
-- Required extensions: GPS error/status copy, narration support errors, transcript/source dialog, completion and replay states. No unsolicited automatic narration.
+## Tour
 
-## Generation briefs
+Large Three.js scene, compact attraction header, narration player and numbered timeline checkpoints. Desktop has a slim chapter rail; mobile uses a chapter sheet. A period overlay remains visible during narration, pause and exploration. Options contain sources, transcript, sound, restart and motion preference. The guide integration may add a contextual question control without replacing the recorded journey.
 
-### Approved MVP extension: Three.js and OpenAI voice
+The scene follows actual recording time. The user does not have to click anything after Play. Camera exploration and optional guide questions must not lose the saved tour position. Architecture, movement, historical changes and the explanation itself are the primary areas for iteration.
 
-Earlier visual proposal: [Big Ben reveal storyboard](wander-big-ben-reveal-concept.png), generated on 1 November 2026. The user subsequently simplified the direction to exterior-only models with narration-led camera stops. The storyboard's bell cutaway is superseded; its map-to-close-up flow and visual styling remain useful references. This is a concept image, not a screenshot of implemented Three.js or OpenAI playback. Implementation should preserve real coordinates and use a reviewed landmark model. Earlier concept images retain their original language controls as historical references; the live app is English-only.
+## Map
 
-The user approved this extension on 1 November 2026; it is the next implementation target. Preserve the flat north-up map and optional perspective preference above. Add actual stylized, exterior-only Three.js landmark geometry on the geographic map, beginning with one complete Big Ben experience. In Look closer, the story guides the camera between three or four composed views of exterior details. Candidate Big Ben views include the whole tower, clock face and surrounding stonework, upper tower exterior, and wider Parliament setting. Match each shot to the reviewed narration and hold the view between gentle transitions. No continuous orbit, interior geometry, cutaways or moving building parts. Camera cues follow audio playback time, including pause/resume/restart and landmark changes. Entering the guided perspective requires an explicit user choice; ordinary map listening leaves the navigation view alone. Reduced-motion mode uses a stable view and simple highlights.
+Secondary discovery screen for Tower Bridge. Top-down by default, with optional perspective. One landmark preview, actual geographic position, optional device location and a single Open the tour action. Preview location is explicitly labeled. Do not imply walking directions or GPS alignment in the 3D scene.
 
-Provide reviewed English OpenAI recordings for all five landmarks. Extend the landmark treatment after the first scene works, with the London Eye next. Keep current illustrated miniatures as fallbacks. Label illustrative reconstructions and AI narration accurately. Live voice conversation remains after the MVP. See [the updated scope and acceptance criteria](../mvp.md).
+## Visual language
 
-### Current close-up implementation
+White app chrome, forest-green text and controls, pale sage 3D setting, subtle brass accents. Serif chapter and attraction headings; legible sans-serif controls. Responsive layouts prioritize model visibility and primary playback. No large introductory panel on the tour screen.
 
-Big Ben now has a dedicated, full-screen Look closer experience. The geographic map keeps its illustrations; the separate Three.js scene supplies the exterior tower, four composed views, drag-to-inspect interaction and shared narration controls. On desktop, chapter navigation sits beside the model; on phones, it becomes a four-item strip above the caption and player. The cream stone, green-gray roof, brass trim and drawn clock faces are code-authored, illustrative geometry rather than a precise architectural reconstruction. No interior is modelled.
+## Active files
 
-Device speech is the user-approved audio fallback for this iteration and is labeled as such. Sentence-start events drive the detail changes instead of invented audio timestamps. The camera eases between views over 1.35 seconds, pauses with playback, and stays fixed for reduced motion. WebGL failure leaves a photograph and the transcript usable. Reviewed OpenAI recordings and more landmark models remain follow-up work.
-
-### Original image assets
-
-Built-in Image Gen was used throughout (no API credential). Active UI brief: preserve the white Wander header/sidebar/story card from the original concept; replace the tilted map with a flat north-up Westminster street map; use pale land, green parks, blue Thames, white roads, and five dimensional illustrated landmark miniatures at geographic positions. The new user-supplied tourist map informed this update. An optional perspective control was then added per the user's follow-up.
-
-Atlas brief: transparent 1536×1024 sheet, three columns and two rows of equal square cells. Top row: Big Ben and adjoining Parliament wing; Westminster Abbey twin towers and nave; London Eye. Bottom row: St James's Park trees, lake, bridge and pelican; Trafalgar Square column, lions and fountains; empty cell. Fine pen linework, dimensional watercolor shading, natural stone cream/tan, muted green/blue, generous transparent margins, no labels or borders. Final asset: `../../public/images/landmarks-atlas.png`.
+- src/App.tsx and src/app-navigation.css: navigation and map preview.
+- src/tour/tour-shell.ts and tour-shell.css: presentation around the tour.
+- src/tour/main.ts, model.ts, machinery.ts and timeline.ts: guided attraction.
+- docs/design/tower-bridge-concept.png: visual concept, not an implementation screenshot.

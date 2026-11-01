@@ -1,0 +1,89 @@
+/* This file owns only the app shell. Scene, narration and animation styles remain in style.css. */
+body.tour-shell { --shell-header: 58px; }
+.tour-shell header { height:var(--shell-header);padding:0 22px;gap:18px;position:relative; }
+.tour-shell .brand { font-size:25px;letter-spacing:-.8px;gap:9px; }
+.tour-shell .brand svg { width:24px;height:24px; }
+.tour-shell .tour-title { position:absolute;left:50%;transform:translateX(-50%);margin:0;font:500 16px/1.2 Inter,ui-sans-serif,system-ui,sans-serif;letter-spacing:0;white-space:nowrap; }
+.tour-shell .shell-icon { display:grid;place-items:center;width:44px;height:44px;border-radius:50%;flex-shrink:0; }
+.tour-shell .shell-icon:hover { background:#edf1e9; }
+.tour-shell #tour-settings-open { margin-left:auto; }
+.tour-shell main { height:calc(100dvh - var(--shell-header));min-height:0;grid-template-columns:220px minmax(0,1fr); }
+.tour-shell aside { padding:18px 12px;overflow-y:auto; }
+.tour-shell .place-heading,.tour-shell .aside-footer { display:none; }
+.tour-shell aside nav { border:0;padding:0; }
+.tour-shell .chapter { padding:17px 10px;gap:10px; }
+.tour-shell .chapter strong { font-size:12px;line-height:1.5; }
+.tour-shell .chapter small { font-size:11px; }
+.tour-shell .chapter .number { font-size:11px; }
+.tour-shell .scene-heading { top:22px;left:26px;right:22px; }
+.tour-shell .scene-heading h2 { font-size:27px; }
+.tour-shell .scene-heading p { font-size:12px; }
+.tour-shell #canvas,.tour-shell #hotspots { bottom:182px; }
+.tour-shell .player { bottom:16px;padding:15px 20px 0;left:22px;right:22px;border-radius:14px; }
+.tour-shell .player-row { gap:14px; }
+.tour-shell .track-info strong { font:500 16px/1.3 Inter,ui-sans-serif,system-ui,sans-serif; }
+.tour-shell .track-info>span { font-size:11px; }
+.tour-shell #restart { display:none; }
+.tour-shell #time { font-size:12px; }
+.tour-shell .timeline { margin-top:14px; }
+.tour-shell .player-options { justify-content:space-between;padding:6px 0 8px;min-height:40px; }
+.tour-shell .player-options>span { display:none; }
+.tour-shell #tour-chapters-open,.tour-shell #read-mobile { display:flex;align-items:center;gap:7px;min-height:32px;font-size:12px;padding:3px 0; }
+.tour-shell #tour-chapters-open { display:none; }
+.tour-shell #tour-chapters-open svg { width:16px;height:16px; }
+.tour-shell #read-mobile { margin-left:auto; }
+.tour-shell .scene-footer { bottom:190px;left:26px;right:26px; }
+.tour-shell .era-overlay { bottom:220px;left:26px; }
+.tour-shell .machinery-panel { bottom:220px; }
+.tour-shell #tour-settings,.tour-shell #tour-chapters { padding:20px 22px;width:min(420px,calc(100% - 24px));max-height:calc(100dvh - 32px); }
+.tour-shell .shell-sheet-heading { display:flex;align-items:center;justify-content:space-between;gap:12px; }
+.tour-shell .shell-sheet-heading h2 { margin:0;font:26px/1.2 Georgia,serif;letter-spacing:-.5px; }
+.tour-shell .shell-settings-content { margin-top:12px; }
+.tour-shell .shell-settings-content>#read-top,.tour-shell .shell-settings-content>label,.tour-shell .shell-setting-row,.tour-shell .shell-restart { display:flex;align-items:center;gap:12px;min-height:52px;width:100%;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px; }
+.tour-shell .shell-settings-content>label { cursor:pointer; }
+.tour-shell #motion { width:18px;height:18px;accent-color:var(--green);margin:0; }
+.tour-shell .shell-setting-row { justify-content:space-between; }
+.tour-shell .shell-disclosure { font-size:11px;line-height:1.5;margin:18px 0 0;color:var(--muted); }
+.tour-shell .shell-sheet-intro { font-size:13px;line-height:1.6;color:var(--muted);margin:12px 0 18px; }
+.tour-shell .shell-chapter-content nav { display:block;overflow:visible;border-top:1px solid var(--line);padding-top:10px; }
+.tour-shell .shell-chapter-content .chapter { width:100%;margin:4px 0;min-height:67px;gap:14px;padding:14px 12px; }
+.tour-shell .shell-chapter-content .chapter strong { max-width:none;font-size:14px; }
+.tour-shell .shell-chapter-content .chapter small { display:block;font-size:12px; }
+.tour-shell .shell-chapter-content .chapter .number { font-size:13px; }
+.tour-shell .shell-chapter-content .chapter svg { display:block; }
+@media(max-width:1000px) and (min-width:761px){
+ .tour-shell main { grid-template-columns:190px minmax(0,1fr); }
+ .tour-shell aside { padding:12px 8px; }
+ .tour-shell .chapter { padding:14px 8px;gap:8px; }
+ .tour-shell .scene-heading h2 { font-size:25px; }
+}
+@media(max-width:760px){
+ .tour-shell header { padding:0 12px; }
+ .tour-shell .brand { font-size:22px; }
+ .tour-shell .brand svg { display:block;width:19px;height:19px; }
+ .tour-shell .tour-title { font-size:15px; }
+ .tour-shell main { display:block;min-height:0; }
+ .tour-shell aside { display:none; }
+ .tour-shell .experience { height:100%; }
+ .tour-shell #canvas,.tour-shell #hotspots { bottom:179px; }
+ .tour-shell .scene-heading { top:18px;left:18px;right:14px; }
+ .tour-shell .scene-heading h2 { font-size:23px;max-width:220px; }
+ .tour-shell .scene-heading p { font-size:11px;max-width:215px; }
+ .tour-shell .player { left:10px;right:10px;bottom:max(10px,env(safe-area-inset-bottom));padding:12px 14px 0;border-radius:13px; }
+ .tour-shell .play { width:46px;height:46px; }
+ .tour-shell .track-info strong { font-size:14px; }
+ .tour-shell .track-info>span { font-size:10px; }
+ .tour-shell #time { font-size:11px; }
+ .tour-shell .timeline { margin-top:13px; }
+ .tour-shell #tour-chapters-open { display:flex; }
+ .tour-shell .scene-footer { bottom:184px;left:18px;right:18px;font-size:9px; }
+ .tour-shell .era-overlay { bottom:209px;left:18px; }
+ .tour-shell .machinery-panel { bottom:209px; }
+ .tour-shell #tour-settings,.tour-shell #tour-chapters { margin:auto 0 0;width:100%;max-width:none;border-radius:20px 20px 0 0;border-bottom:0;max-height:85dvh;padding:20px 22px max(22px,env(safe-area-inset-bottom)); }
+}
+@media(max-height:600px) and (min-width:761px){
+ .tour-shell .scene-heading h2 { font-size:21px; }
+ .tour-shell .scene-heading p { display:none; }
+ .tour-shell .era-overlay { padding:8px 12px; }
+ .tour-shell .era-overlay #era { font-size:30px; }
+}

@@ -35,7 +35,7 @@ export function Map({ selected, position, live, onSelect }: Props) {
     try {
       instance = new maplibregl.Map({
         container: container.current, style: '/map-style.json',
-        center: [-0.1260, 51.5029], zoom: window.innerWidth < 700 ? 14.7 : 15.45,
+        center: [landmarks[0].coordinates.longitude, landmarks[0].coordinates.latitude], zoom: window.innerWidth < 700 ? 14.7 : 15.45,
         pitch: 0, bearing: 0, attributionControl: false, maxPitch: 50,
         dragRotate: false, touchPitch: false,
       });
@@ -116,7 +116,7 @@ export function Map({ selected, position, live, onSelect }: Props) {
     map.current?.fitBounds(bounds, { padding: { top: mobile ? 95 : 130, right: mobile ? 90 : 100, bottom: Math.min(height * 0.5, mobile ? 310 : 360), left: mobile ? 60 : 100 }, maxZoom: 15.5, duration: reducedMotion() ? 0 : 700 });
   }
   return <>
-    <div className="map-canvas" ref={container} aria-label="Westminster map" />
+    <div className="map-canvas" ref={container} aria-label="London attraction map" />
     {state !== 'ready' && <div className={`map-message ${state}`} role="status">
       <MapPinned size={24} /><span>{state === 'loading' ? c.mapLoading : c.mapError}</span>
       {state === 'error' && <button onClick={() => setAttempt(value => value + 1)}>{c.retry}</button>}

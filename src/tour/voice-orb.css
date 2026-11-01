@@ -1,0 +1,65 @@
+/* ElevenLabs UI Orb with a readable state and separate session controls. */
+.tour-shell #voice-guide-slot.voice-mode-slot {
+  width: 240px; max-width: calc(100% - 32px); left: 0; right: 0; bottom: 26px;
+}
+.tour-shell .voice-guide.voice-mode {
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; backdrop-filter: none;
+}
+.voice-mode .voice-toggle {
+  display: none; place-items: center; width: 64px; height: 64px; padding: 0;
+  border-radius: 50%; color: #171817; background: #fff; box-shadow: 0 4px 24px #122b3429;
+  touch-action: manipulation;
+}
+.voice-mode[data-status='idle'] .voice-toggle, .voice-mode[data-status='error'] .voice-toggle { display: grid; }
+.voice-mode .voice-toggle:focus-visible { outline: 3px solid #fff; outline-offset: 7px; }
+.voice-mode .voice-launch { display: grid; place-items: center; }
+.voice-mode .voice-launch svg { width: 29px; height: 29px; }
+.voice-mode .voice-orb {
+  display: block; position: relative; width: 144px; height: 144px; flex: 0 0 auto;
+  border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle at 35% 30%, #f5f5f5, #bdbdbd 55%, #747474);
+}
+.voice-mode .voice-orb:has(canvas) { background: transparent; }
+.voice-mode .voice-orb .elevenlabs-orb { width: 100%; height: 100%; }
+.voice-mode .voice-orb canvas { display: block; width: 100%; height: 100%; filter: drop-shadow(0 6px 10px #1423231a); }
+.voice-mode[data-status='idle'] .voice-orb, .voice-mode[data-status='error'] .voice-orb { display: none; }
+.voice-mode[data-status='paused'] .voice-orb { filter: saturate(.35); }
+.voice-mode .voice-state-label {
+  display: block; color: #273a30; background: #f8faf3ed; border: 1px solid #ffffff80;
+  border-radius: 20px; padding: 6px 12px; font-size: 11px; font-weight: 500;
+  line-height: 1.2; letter-spacing: .2px; text-align: center;
+}
+.voice-mode .voice-mode-controls { display: flex; justify-content: center; gap: 10px; }
+.voice-mode .voice-mode-controls button {
+  display: grid; place-items: center; width: 44px; height: 44px; padding: 0;
+  color: #242b27; background: #f8faf5ef; border: 1px solid #ffffff9c; border-radius: 50%;
+  box-shadow: 0 3px 12px #142c3210;
+}
+.voice-mode .voice-mode-controls button:hover { background: #fff; }
+.voice-mode .voice-mode-controls button[aria-pressed='true'] { background: #d1dbce; border-color: #a6b3a0; }
+.voice-mode .voice-mode-controls button svg { width: 19px; height: 19px; }
+.voice-mode .voice-mode-controls button:disabled { opacity: .5; }
+.voice-mode .voice-mode-controls #voice-end { background: #252c28; color: #fff; border-color: #252c28; }
+.voice-mode .voice-mode-controls #voice-end:hover { background: #111814; }
+.tour-shell .voice-mode .voice-caption {
+  left: 50%; right: auto; width: min(400px, calc(100vw - 32px)); transform: translateX(-50%);
+  bottom: calc(100% + 20px); max-height: 120px; padding: 12px 18px; text-align: center;
+}
+.tour-shell .voice-mode .voice-caption p { margin: 0; }
+.voice-mode .voice-notice { margin: 0; width: min(320px, calc(100vw - 32px)); text-align: center; box-shadow: 0 4px 18px #152f281c; }
+.voice-mode #voice-enable-sound { border-radius: 20px; padding: 10px 16px; background: #fff; margin: 0; }
+@media (max-width: 760px) {
+  .tour-shell #voice-guide-slot.voice-mode-slot { bottom: max(20px, env(safe-area-inset-bottom)); }
+  .voice-mode .voice-orb { width: 120px; height: 120px; }
+  .voice-mode .voice-toggle { width: 60px; height: 60px; }
+}
+@media (max-height: 700px) {
+  .voice-mode .voice-orb { width: 96px; height: 96px; }
+  .tour-shell .voice-guide.voice-mode { gap: 8px; }
+}
+@media (max-height: 500px) and (min-width: 761px) {
+  .tour-shell #voice-guide-slot.voice-mode-slot { width: 210px; left: auto; right: 12px; bottom: 12px; }
+  .voice-mode .voice-orb { width: 80px; height: 80px; }
+  .voice-mode .voice-mode-controls { gap: 6px; }
+}
