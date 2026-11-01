@@ -23,6 +23,34 @@ npm test       # GPS guardrails and narration-to-camera cue checks
 
 Deploy `dist/` to any static HTTPS host. This repository currently contains a local app, not a public deployment. Phone geolocation requires HTTPS; opening the LAN HTTP URL lets you explore and listen but generally cannot provide GPS. `localhost` is permitted for development.
 
+## OpenAI setup and guide audio
+
+Run this in your own terminal:
+
+```sh
+npm run openai:setup
+```
+
+The wizard opens the [OpenAI API-key dashboard](https://platform.openai.com/api-keys), asks you to create a key in your chosen project, and accepts it with hidden terminal input. It saves `OPENAI_API_KEY` in `.env.local` with owner-only permissions. Git already ignores this file. Do not paste the key into chat or name it `VITE_OPENAI_API_KEY`: Vite-prefixed values are exposed to the browser. `.env.example` contains only an empty template.
+
+The wizard checks authentication with `GET /v1/models`. To check again, run `npm run openai:check`. The check makes no generation request; success does not prove available credits or access to an audio model. A restricted key needs permission to read models for this check. An exported `OPENAI_API_KEY` takes precedence over `.env.local` when running the check directly. See the [official API quickstart](https://developers.openai.com/api/docs/quickstart) for account setup.
+
+The current app still uses device narration. These setup commands prepare local API access; they do not yet generate audio or change playback.
+
+For this project's next iteration, generate and review narration ahead of time, then serve the recordings as static assets. Keep the key in the local generation process. This fits the five fixed landmark stories and avoids an API request on every listen.
+
+| Need | OpenAI API to use | Suggested use in Wander |
+| --- | --- | --- |
+| Spoken guide narration | Realtime API with `gpt-realtime-2.1-mini` | Supply an approved script as text, collect audio output locally, and review it before publishing. |
+| A visitor asks a spoken question | Realtime API | Add live voice conversations with landmark context and interruptions. Browser sessions use a short-lived client secret issued by a backend. |
+| Drafting and translating stories | Responses API | Turn sourced landmark notes into concise scripts; review historical claims and translations before narration. |
+
+Current official documentation: [Realtime](https://developers.openai.com/api/docs/guides/realtime), [text and audio conversations](https://developers.openai.com/api/docs/guides/realtime-conversations), and [text generation](https://developers.openai.com/api/docs/guides/text). Model access depends on your project.
+
+As checked on 1 November 2026, the [text-to-speech guide](https://developers.openai.com/api/docs/guides/text-to-speech) marks `gpt-4o-mini-tts`, `tts-1`, and `tts-1-hd` as deprecated, with shutdown on 6 January 2027. It recommends `gpt-realtime-2.1-mini` through the Realtime API for migration. That model cannot be substituted into `/v1/audio/speech`.
+
+Start with one Big Ben chapter. A useful direction is: “Read the supplied script exactly. Sound like a warm, knowledgeable London walking guide. Use natural British English, an unhurried pace, and short pauses between ideas.” Review the actual output for wording and pronunciation. Generate each camera chapter separately, measure the resulting durations, and use those timings to drive the close-up camera. The prototype's `public/audio/script.json` and `chapters.json` already demonstrate that structure; the main app currently follows device speech sentence events instead. Label the eventual playback “AI-generated narration,” as required by the speech documentation.
+
 ## The complete journey
 
 1. Start with the clearly labeled Westminster preview point, or tap **Use my location**.
@@ -64,4 +92,4 @@ Landmark photography comes from Wikimedia Commons, with author, original-file UR
 
 Stories are original short scripts based on UK Parliament, Westminster Abbey, the London Eye, The Royal Parks and Royal Museums Greenwich. Source links are available in each transcript. Codex helped narrow the MVP, research and draft the English scripts, generate the visual direction, implement the app and verify the core journey.
 
-The supplied event PDF includes venue access details and is excluded from Git. No `.env` file or API credential is needed or included.
+The supplied event PDF includes venue access details and is excluded from Git. No API credential is committed. Running the current app requires none; optional OpenAI setup stores a local credential in the ignored `.env.local` file.
