@@ -1,4 +1,4 @@
-import { RealtimeGuide, type GuideStatus } from './guide-client';
+import { LiveGuide, type GuideStatus } from './guide-client';
 import type { TourGuide } from './guide-contract';
 import { checkpointIds, tourStops } from './tour-content';
 import './guide.css';
@@ -62,7 +62,7 @@ export function mountGuide(tour:TourGuide){
    get('#voice-enable-sound').hidden=true;
   }
  }
- const client=new RealtimeGuide(tour,{
+ const client=new LiveGuide(tour,{
   status(value,detail){
    status=value;const notice=get('#voice-notice');
    notice.hidden=!detail||!['error','listening'].includes(value);notice.textContent=detail??'';

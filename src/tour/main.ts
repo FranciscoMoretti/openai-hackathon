@@ -5,7 +5,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { createBridgeWorld } from './model';
 import { createMachinery } from './machinery';
 import { chapters, duration, chapterAt, sceneAt, stillAt, cameraAt, poses } from './timeline';
-import type { TourGuide, Feature } from './guide-contract';
+import type { TourGuide, Feature, Demonstration } from './guide-contract';
 import { tourStops, checkpointIds, type CheckpointId } from './tour-content';
 
 const $ = <E extends HTMLElement = HTMLElement>(selector: string) => document.querySelector<E>(selector)!;
@@ -131,6 +131,14 @@ const featureViews:Record<Feature,{position:number[];target:number[];size:number
  bascules:{position:[68,54,115],target:[0,17,0],size:[65,10,18]},
  machinery:{position:[108,65,160],target:[0,23,0],size:[1,1,1]},
 };
+function prepareFeatureView(feature:Feature){
+ if(feature==='machinery'){demo=null;visualTime=chapters[3].cues[2].start;return;}
+ // Preserve a running demonstration; restore missing geometry after an interrupted build.
+ const state=sceneAt(viewedTime());
+ if((!demo||demo.paused)&&state.chapter<2&&['bridge','walkways','bascules'].includes(feature)){
+   demo=null;visualTime=chapters[2].start;
+ }
+}
 export const tour:TourGuide={
  selectCheckpoint,
  onCheckpointRequest(callback){checkpointRequest=callback;},
@@ -142,18 +150,16 @@ export const tour:TourGuide={
    const currentTime=viewedTime();world?.update(animate?sceneAt(currentTime):stillAt(currentTime),!animate);
    renderer.render(worldScene,camera);
    const image=document.createElement('canvas'),source=renderer.domElement;
-   const scale=Math.min(1,960/source.width);image.width=Math.round(source.width*scale);image.height=Math.round(source.height*scale);
+   const scale=Math.min(1,640/source.width);image.width=Math.round(source.width*scale);image.height=Math.round(source.height*scale);
    const ctx=image.getContext('2d');if(!ctx)return null;ctx.drawImage(source,0,0,image.width,image.height);
    const state=sceneAt(viewedTime());
    if(state.machinery){machinery?.update(viewedTime(),state.electric===1,!animate);const machine=$('#machinery-canvas').querySelector('canvas');if(machine){const w=image.width*.4,h=w*machine.height/machine.width;ctx.drawImage(machine,image.width-w,image.height-h,w,h);}}
-   return image.toDataURL('image/jpeg',.72);
+   return image.toDataURL('image/jpeg',.45);
  },
  async focus(feature){
    if(!camera||!controls)return;
    setFollow(false);selectedFeature=feature;
-   // Exterior focus changes the camera, not the historical state or running build.
-   // Otherwise a tower close-up can restore the finished bridge mid-construction.
-   if(feature==='machinery'){demo=null;visualTime=chapters[3].cues[2].start;}
+   prepareFeatureView(feature);
    const view=featureViews[feature],target=new T.Vector3(...view.target),to=new T.Vector3(...view.position);
    if(camera.aspect<1)to.sub(target).multiplyScalar(1.35).add(target);
    camera.fov=42;camera.updateProjectionMatrix();
@@ -163,7 +169,7 @@ export const tour:TourGuide={
    if(animate)await new Promise(resolve=>setTimeout(resolve,850));
  },
  highlight(feature){
-   selectedFeature=feature;if(!outline)return;const view=featureViews[feature];
+   prepareFeatureView(feature);selectedFeature=feature;if(!outline)return;const view=featureViews[feature];
    outline.box.setFromCenterAndSize(new T.Vector3(...view.target),new T.Vector3(...view.size));outline.visible=feature!=='machinery';
    $('#machinery-panel').classList.toggle('guide-highlight',feature==='machinery');
  },

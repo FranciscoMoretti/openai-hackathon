@@ -7,7 +7,7 @@
     "dev": "vite --host 0.0.0.0",
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 0.0.0.0",
-    "test": "vitest run && vitest run server/realtime.test.ts",
+    "test": "vitest run && vitest run server/live.test.ts",
     "openai:setup": "bash scripts/setup-openai.sh",
     "openai:check": "node scripts/check-openai.mjs",
     "audio:generate": "python3 scripts/generate-tour-audio.py"

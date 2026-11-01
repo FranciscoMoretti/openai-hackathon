@@ -4,7 +4,7 @@ An interactive 3D audio tour for curious London visitors. Explore Tower Bridge�
 
 ## Run locally
 
-Requires Node.js 22.12+ and an OpenAI API key with Realtime access and available credits.
+Requires Node.js 22.12+ and an OpenAI API key with Live and Responses access and available credits.
 
 ```sh
 npm install
@@ -16,7 +16,7 @@ Open [localhost:5173](http://localhost:5173/). The setup wizard saves your key i
 
 ## Try it
 
-1. Press **Start voice tour** and allow microphone access. The guide takes you through four story stops.
+1. Press **Start voice tour** and allow microphone access. The guide takes you through three story stops.
 2. Interrupt with “How does the bridge open?” or “Show me the walkways.” Say “carry on” to resume the story.
 3. Select a checkpoint to jump to another stop, or use the voice controls to pause, mute, show captions, or end the tour.
 
@@ -24,7 +24,11 @@ You can explore the 3D scene without an API key. The map at `/#map` opens the to
 
 ## How it works
 
-React, TypeScript, Vite and Three.js power the app. OpenAI Realtime provides the live voice guide over WebRTC, using scene snapshots and tools to focus features, animate the bridge and navigate stops. The API key stays on the server in [server/realtime.ts](server/realtime.ts). Voice defaults to Marin; the model is configurable in `.env.example`.
+React, TypeScript, Vite and Three.js power the app. OpenAI GPT-Live provides the live voice guide over WebRTC, using scene snapshots and tools to focus features, animate the bridge and navigate stops. The API key stays on the server in [server/live.ts](server/live.ts). Voice defaults to Marin and `gpt-live-1`; `gpt-5.6-terra` handles delegated reasoning and scene images. Both models are configurable in `.env.example`.
+
+Normal checkpoint transitions stay in the browser. Each narration brief includes a natural closing sentence; the app recognises it in the transcript and waits for incoming audio to go quiet before advancing. Demonstrations start with the narration. Missing closing wording is requested directly from the voice. Questions and requested scene actions use the Responses backend, whose tool results do not restart narration.
+
+Muting disables the microphone track while keeping the WebRTC connection running with silence, so listening-only tours continue. Pause and End release the microphone and close the session. Resume keeps the checkpoint but starts a fresh conversation.
 
 ```sh
 npm test         # unit tests
@@ -36,7 +40,7 @@ The voice endpoint accepts localhost requests only. Public hosting needs an auth
 
 ## Hackathon work and credits
 
-Project work includes the Tower Bridge model, four-stop story, map navigation and live guide integration. A concrete Codex contribution: it changed the map pin to open the tour directly, then verified the click, back navigation and production build.
+Project work includes the Tower Bridge model, three-stop story, map navigation and live guide integration. A concrete Codex contribution: it changed the map pin to open the tour directly, then verified the click, back navigation and production build.
 
 Reused components and assets:
 
