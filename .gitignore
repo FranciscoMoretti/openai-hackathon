@@ -9,3 +9,5 @@ tmp/
 
 # Local event reference contains venue access details.
 docs/references/builders-guide.pdf
+
+.vercel/

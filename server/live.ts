@@ -1,10 +1,27 @@
+import { createHmac, timingSafeEqual } from 'node:crypto';
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { voiceInstructions, backendInstructions, narrationBrief, guideTools } from '../src/tour/guide-contract';
+import { voiceInstructions, backendInstructions, narrationBrief, guideTools } from '../src/tour/guide-contract.js';
 
-import { checkpointIds, type CheckpointId } from '../src/tour/tour-content';
+import { checkpointIds, type CheckpointId } from '../src/tour/tour-content.js';
 
-/** Local-only demo endpoint. The long-lived API key never enters a client bundle. */
-export function liveHandler(options: { apiKey?: string; model?: string; backendModel?: string; fetcher?: typeof fetch }) {
+/** Server-only demo endpoint. The long-lived API key never enters a client bundle. */
+export function liveHandler(options: { apiKey?: string; model?: string; backendModel?: string; fetcher?: typeof fetch; allowedHosts?: string[]; sessionSecret?: string }) {
+  const sign=(payload:string)=>createHmac('sha256',options.sessionSecret!).update(payload).digest('base64url');
+  const tokenFor=(id:string)=>{
+    const payload=Buffer.from(JSON.stringify({id,expires:Date.now()+3_600_000})).toString('base64url');
+    return `${payload}.${sign(payload)}`;
+  };
+  const ownsSession=(id:string,token:unknown)=>{
+    if(!options.sessionSecret)return sessions.has(id);
+    if(typeof token!=='string')return false;
+    try{
+      const [payload,signature,...extra]=token.split('.');
+      const expected=Buffer.from(sign(payload)),provided=Buffer.from(signature??'');
+      if(extra.length||expected.length!==provided.length||!timingSafeEqual(expected,provided))return false;
+      const claim=JSON.parse(Buffer.from(payload,'base64url').toString());
+      return claim.id===id&&typeof claim.expires==='number'&&claim.expires>Date.now();
+    }catch{return false;}
+  };
   let attempts: number[] = [];
   const sessions = new Map<string, number>();
   const closeSession = async (id: string) => {
@@ -21,18 +38,19 @@ export function liveHandler(options: { apiKey?: string; model?: string; backendM
     res.setHeader('Cache-Control', 'no-store');
     const fail = (status: number, error: string) => { res.statusCode = status; res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify({ error })); };
     const host = req.headers.host ?? '';
-    if (!/^(localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/.test(host)) return fail(403, 'This demo accepts local connections only.');
+    const local=/^(localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/.test(host);
+    if (!local&&!options.allowedHosts?.includes(host)) return fail(403, 'This host is not configured for the guide.');
+    if (!local&&req.headers.origin!==`https://${host}`) return fail(403, 'Use the guide on its HTTPS website.');
     if (req.headers.origin && req.headers.origin !== `http://${host}` && req.headers.origin !== `https://${host}`) return fail(403, 'Cross-origin session requests are not allowed.');
     if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); return fail(405, 'Use POST to start a guide session.'); }
     if (path !== '/api/live/session/close' && req.headers['content-type']?.split(';')[0] !== 'application/sdp') return fail(415, 'Expected a WebRTC session offer.');
-    if (!options.apiKey) return fail(503, 'OpenAI is not configured. Add OPENAI_API_KEY to the repository .env.local and restart the server.');
+    if (!options.apiKey) return fail(503, 'OpenAI is not configured. Set the server OPENAI_API_KEY environment variable.');
     for (const [id, created] of sessions) if (Date.now() - created > 3_600_000) sessions.delete(id);
     if (path === '/api/live/session/close') {
       try {
-        let body = '';
-        for await (const chunk of req) { body += chunk.toString(); if (body.length > 1024) return fail(413, 'Invalid session close request.'); }
-        const { sessionId } = JSON.parse(body);
-        if (typeof sessionId !== 'string' || !sessions.has(sessionId)) return fail(404, 'Session is not owned by this server.');
+        const body=await readBody(req,2048);
+        const { sessionId, closeToken } = JSON.parse(body);
+        if (typeof sessionId !== 'string' || !ownsSession(sessionId,closeToken)) return fail(404, 'Session is not owned by this server.');
         await closeSession(sessionId); res.statusCode = 204; res.end();
       } catch { fail(502, 'Could not confirm that the live session ended.'); }
       return;
@@ -41,13 +59,7 @@ export function liveHandler(options: { apiKey?: string; model?: string; backendM
     if (attempts.length >= 10) return fail(429, 'Too many connection attempts. Wait a minute and try again.');
     attempts.push(Date.now());
     try {
-      const chunks: Buffer[] = []; let size = 0;
-      for await (const chunk of req) {
-        size += chunk.length;
-        if (size > 64 * 1024) return fail(413, 'The session offer is too large.');
-        chunks.push(Buffer.from(chunk));
-      }
-      const sdp = Buffer.concat(chunks).toString('utf8');
+      const sdp=await readBody(req,64*1024);
       if (!sdp.startsWith('v=0') || !sdp.includes('m=audio')) return fail(400, 'Invalid WebRTC session offer.');
       const query = new URL(req.url!, `http://${host}`).searchParams;
       const requested = query.get('checkpoint') as CheckpointId;
@@ -89,7 +101,19 @@ export function liveHandler(options: { apiKey?: string; model?: string; backendM
       sessions.set(result.session.id, Date.now());
       if (res.destroyed) { await closeSession(result.session.id); return; }
       res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ session: { id: result.session.id }, transport: { sdp: result.transport.sdp } }));
-    } catch { fail(502, 'Could not connect to OpenAI. Check your connection and try again.'); }
+      res.end(JSON.stringify({ session: { id: result.session.id, ...(options.sessionSecret?{closeToken:tokenFor(result.session.id)}:{}) }, transport: { sdp: result.transport.sdp } }));
+    } catch(error) { if(error instanceof RangeError)return fail(413,'The session offer is too large.'); fail(502, 'Could not connect to OpenAI. Check your connection and try again.'); }
   };
+}
+
+/** Vercel may parse JSON bodies before calling the Node handler; SDP stays a stream. */
+async function readBody(req:IncomingMessage & {body?:unknown},limit:number){
+  if(req.body!==undefined){
+    const body=Buffer.isBuffer(req.body)?req.body.toString('utf8'):typeof req.body==='string'?req.body:JSON.stringify(req.body);
+    if(Buffer.byteLength(body)>limit)throw new RangeError('Body too large');
+    return body;
+  }
+  const chunks:Buffer[]=[];let size=0;
+  for await(const chunk of req){const bytes=Buffer.from(chunk);size+=bytes.length;if(size>limit)throw new RangeError('Body too large');chunks.push(bytes);}
+  return Buffer.concat(chunks).toString('utf8');
 }

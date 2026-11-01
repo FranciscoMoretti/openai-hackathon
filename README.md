@@ -36,7 +36,7 @@ npm run build   # type-check and production build
 npm run preview # serve the build locally, including the voice endpoint
 ```
 
-The voice endpoint accepts localhost requests only. Public hosting needs an authenticated backend and HTTPS; a static deployment alone cannot run the voice guide. Starting voice sends microphone audio and scene context to OpenAI. Location stays in device memory.
+The local voice endpoint accepts localhost requests only. Vercel hosts the same endpoint as a server function, allowing only the configured HTTPS website origins. Session cleanup uses signed, expiring tokens so it works across function instances. The demo has a per-instance connection limit; it does not require visitor accounts. Starting voice sends microphone audio and scene context to OpenAI. Location stays in device memory.
 
 ## Hackathon work and credits
 
@@ -48,3 +48,11 @@ Reused components and assets:
 - ElevenLabs UI Orb, adapted under MIT: [attribution](public/licenses/elevenlabs-ui/NOTICE) and [license](public/licenses/elevenlabs-ui/LICENSE). Voice audio uses OpenAI.
 - Historical sources are linked in the tour’s story notes. The geometry and engineering animations are illustrative.
 - Bundled landmark photo credits: [image-credits.json](public/image-credits.json). Generated visual concepts are design references; legacy recordings are not used by the live guide.
+
+## Deploy to Vercel
+
+The live app is [wander-london.vercel.app](https://wander-london.vercel.app/). The Vercel project is `wander-london`, connected to this GitHub repository for automatic deployments. The repository includes the Vite build and a Node function for `/api/live/session` and `/api/live/session/close`; audio streams directly over WebRTC after setup.
+
+Set `OPENAI_API_KEY` and a random `OPENAI_SESSION_SECRET` as server-only secrets in Vercel. Configure `OPENAI_LIVE_MODEL=gpt-live-1` and `OPENAI_LIVE_BACKEND_MODEL=gpt-5.6-terra`. Production and preview Vercel hostnames are read from system variables; add custom domains to `APP_ALLOWED_HOSTS` (comma-separated hostnames without a scheme). Never prefix secrets with `VITE_`.
+
+Run `vercel --prod` from the linked checkout. `.env.local` is excluded from Git and deployment uploads. Vercel environment variables supply the production secrets.

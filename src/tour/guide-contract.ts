@@ -1,4 +1,4 @@
-import { checkpointIds, tourStops, type CheckpointId } from './tour-content';
+import { checkpointIds, tourStops, type CheckpointId } from './tour-content.js';
 export const features = ['bridge', 'towers', 'walkways', 'bascules', 'machinery'] as const;
 export type Feature = typeof features[number];
 export const demonstrations = ['bridge_opening', 'construction', 'power_change'] as const;

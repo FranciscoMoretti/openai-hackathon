@@ -22,6 +22,7 @@ export class LiveGuide {
   private epoch=0;
   private ready=false;
   private sessionId?:string;
+  private closeToken?:string;
   private running=false;
   private connecting=false;
   private currentStatus:GuideStatus='idle';
@@ -169,7 +170,7 @@ export class LiveGuide {
       if(generation!==this.generation)return;
       const data=await response.json();
       if(!response.ok)throw new Error(data.error||'Could not connect to your guide.');
-      this.sessionId=data.session.id;
+      this.sessionId=data.session.id;this.closeToken=data.session.closeToken;
       await pc.setRemoteDescription({type:'answer',sdp:data.transport.sdp});
       await started;
       if(generation!==this.generation)return;
@@ -271,7 +272,7 @@ export class LiveGuide {
   }
   stop(){this.stopResources();this.paused=false;this.state('idle');}
   private stopResources(){
-    const channel=this.channel,pc=this.pc,ready=this.ready,sessionId=this.sessionId;this.sessionId=undefined;
+    const channel=this.channel,pc=this.pc,ready=this.ready,sessionId=this.sessionId,closeToken=this.closeToken;this.sessionId=undefined;this.closeToken=undefined;
     this.generation++;this.epoch++;this.running=false;this.connecting=false;this.ready=false;
     clearTimeout(this.connectTimer);clearTimeout(this.disconnectTimer);clearTimeout(this.idleTimer);clearInterval(this.contextTimer);clearInterval(this.audioTimer);
     this.abort?.abort();this.started?.();this.started=undefined;
@@ -286,7 +287,7 @@ export class LiveGuide {
       try{channel.send(JSON.stringify({type:'session.close',event_id:crypto.randomUUID()}));}catch{cleanup();}
     }else{channel?.close();pc?.close();}
     // keepalive also reaches the server when the page is being unloaded. The server only closes sessions it created.
-    if(sessionId)void fetch('/api/live/session/close',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId}),keepalive:true}).catch(()=>{});
+    if(sessionId)void fetch('/api/live/session/close',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId,closeToken}),keepalive:true}).catch(()=>{});
     this.pendingDemo=undefined;this.runs.clear();this.pendingResponses.clear();this.toolCount=0;this.statsBusy=false;this.audioMetrics=false;this.audioEnergy=undefined;this.lastAudioAt=0;this.toolQueue=Promise.resolve();this.captions='';this.lastContext='';this.lastSpeaker='';this.lastInputEnd=-Infinity;this.spokenCharacters=0;this.narratedText='';this.soundBlocked=false;
     this.progress(false);this.tour.pauseScene();this.events.mic(false);this.events.caption('');
   }
