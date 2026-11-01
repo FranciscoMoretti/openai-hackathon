@@ -1,5 +1,9 @@
 # Wander — Tower Bridge
 
+## [Open the live app](https://wander-london.vercel.app/) · [Watch the demo](https://cap.so/s/nwc4v48adpqk2y2)
+
+[![Wander’s live Tower Bridge tour, with an interactive 3D bridge, three story checkpoints, and a voice guide.](docs/images/wander-live.png)](https://wander-london.vercel.app/)
+
 An interactive 3D audio tour for curious London visitors. Explore Tower Bridge’s construction and moving roadway, interrupt the live guide with questions, and ask it to show you details. Built for the DevDay Exchange Community Hackathon, London, 1 November 2026.
 
 ## Run locally
