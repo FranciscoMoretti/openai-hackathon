@@ -14,7 +14,7 @@ describe('local Realtime session endpoint',()=>{
   it('keeps credentials server-side and fixes model/tool configuration',async()=>{
     const {post,fetcher}=await setup('private-test-key');const response=await post();expect(response.status).toBe(200);expect(response.headers.get('cache-control')).toBe('no-store');expect(await response.text()).toBe('v=0\r\nanswer');
     const call=fetcher.mock.calls[0] as unknown as [string,RequestInit];expect(call[0]).toBe('https://api.openai.com/v1/realtime/calls');
-    const config=JSON.parse((call[1].body as FormData).get('session') as string);expect(config.model).toBe('gpt-realtime-2.1');expect(config.tools.map((x:{name:string})=>x.name)).toContain('continue_tour');expect(config.audio.input.turn_detection.create_response).toBe(false);
+    const config=JSON.parse((call[1].body as FormData).get('session') as string);expect(config.model).toBe('gpt-realtime-2.1');expect(config.reasoning).toEqual({effort:'minimal'});expect(config.tools.map((x:{name:string})=>x.name)).toContain('continue_tour');expect(config.audio.input.turn_detection.create_response).toBe(false);
   });
   it('rejects cross-origin requests before contacting OpenAI',async()=>{
     const {post,fetcher}=await setup('test');expect((await post(undefined,{Origin:'https://other.example'})).status).toBe(403);expect(fetcher).not.toHaveBeenCalled();

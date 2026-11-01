@@ -9,7 +9,7 @@ type Events = {
   audioBlocked():void;
   progress(completed:ReadonlySet<CheckpointId>,guiding:boolean):void;
 };
-type Request = { kind:'tour'|'question'; checkpoint:number; epoch:number };
+type Request = { kind:'tour'|'question'; checkpoint:number; epoch:number; transition?:boolean };
 
 /** One Realtime conversation owns all narration, questions and scene tools. */
 export class RealtimeGuide {
@@ -30,12 +30,12 @@ export class RealtimeGuide {
   private responseId?:string;
   private responseEpoch=0;
   private request?:Request;
+  private narrationScene?:{checkpoint:number;started:boolean};
   private pending?:Request;
   private completedResponse?:{id:string;request:Request;hasAudio:boolean};
   private playbackEnded=new Set<string>();
   private snapshotId?:string;
   private captions=new Map<string,string>();
-  private advanceTimer?:ReturnType<typeof setTimeout>;
   private idleTimer?:ReturnType<typeof setTimeout>;
   private connectTimer?:ReturnType<typeof setTimeout>;
   private nextCheckpoint=0;
@@ -96,22 +96,23 @@ export class RealtimeGuide {
     if(this.running&&this.connected)this.narrate(index);else if(!this.connecting){this.cancelTurn();this.state(this.connected?'paused':'idle');}
   }
   continueTour(){if(!this.connected||!this.running){void this.start();return;}this.narrate(this.nextCheckpoint);}
-  private narrate(index:number){
+  private narrate(index:number,transition=false){
     if(index>=tourStops.length){this.progress(false);this.state('listening','The tour is complete. Stay curious — ask me anything.');return;}
     this.cancelTurn();this.progress(true);this.nextCheckpoint=index;this.tour.selectCheckpoint(checkpointIds[index]);
-    this.pending={kind:'tour',checkpoint:index,epoch:this.epoch};this.flush();
+    this.narrationScene={checkpoint:index,started:false};
+    this.pending={kind:'tour',checkpoint:index,epoch:this.epoch,transition};this.flush();
   }
   private narrationBrief(index:number){
     const stop=tourStops[index];
-    const welcome=this.introduced?'You have already met this visitor. Do not repeat a welcome or the reminder that they can interrupt. If this stop was interrupted, use at most one sentence of recap, then finish its idea in fresh words.':'This is your first passage with this visitor. Welcome them briefly and mention once that they can interrupt.';
+    const welcome=this.introduced?'You have already met this visitor. Do not repeat a welcome or the reminder that they can interrupt. If this stop was interrupted, use at most one sentence of recap, then finish its idea in fresh words.':'This is your first passage. Begin directly with the bridge rising, without a separate greeting; mention briefly that they can interrupt.';
     this.introduced=true;
-    return `Guide direction (not visitor speech): Narrate only stop ${index+1}/4: ${stop.title}. ${stop.direction} ${welcome} ${this.completed.has(stop.id)?'The visitor is revisiting this topic.':''} Use the conversation to avoid repeating what the visitor already heard, especially after an interruption. Speak about 55–80 words, then finish this passage. The app handles the transition after playback; do not call continue_tour yourself during this passage. Facts: ${stop.notes}`;
+    return `Guide direction (not visitor speech): Narrate only stop ${index+1}/${tourStops.length}: ${stop.title}. ${stop.direction} ${welcome} ${this.completed.has(stop.id)?'The visitor is revisiting this topic.':''} Use the conversation to avoid repeating what the visitor already heard, especially after an interruption. Speak about ${index===0?'25–35':'55–80'} words, then finish this passage. The app handles the transition after playback; do not call continue_tour yourself during this passage. Facts: ${stop.notes}`;
   }
   private sendView(){
     if(this.snapshotId)this.send({type:'conversation.item.delete',item_id:this.snapshotId});
     const context={...this.tour.context(),completedCheckpoints:[...this.completed],nextCheckpoint:checkpointIds[this.nextCheckpoint]??null,guidedNarration:this.guiding};
     const content:object[]=[{type:'input_text',text:`Private guide context, not visitor speech: ${JSON.stringify(context)}`}];
-    const snapshot=this.tour.capture();if(snapshot)content.push({type:'input_image',image_url:snapshot});
+    const snapshot=this.request?.kind==='question'?this.tour.capture():null;if(snapshot)content.push({type:'input_image',image_url:snapshot});
     this.snapshotId=`view_${crypto.randomUUID().replaceAll('-','').slice(0,24)}`;
     this.send({type:'conversation.item.create',item:{id:this.snapshotId,type:'message',role:'user',content}});
   }
@@ -125,10 +126,11 @@ export class RealtimeGuide {
   private respond(){
     if(!this.running||!this.connected||!this.request||this.request.epoch!==this.epoch||this.userSpeaking)return;
     this.responding=true;this.responseEpoch=this.epoch;this.completedResponse=undefined;
-    this.send({type:'response.create'});this.state('thinking');this.keepAlive();
+    // Narrated stops have a known scene action; no model/tool round trip is needed.
+    this.send({type:'response.create',response:{tool_choice:this.request.kind==='tour'?'none':'auto'}});this.state(this.request.transition?'transitioning':'thinking');this.keepAlive();
   }
   private cancelTurn(serverInterrupted=false){
-    this.epoch++;clearTimeout(this.advanceTimer);this.pending=undefined;this.completedResponse=undefined;
+    this.epoch++;this.pending=undefined;this.completedResponse=undefined;
     if(this.output)this.output.muted=true;
     if(this.responding&&!serverInterrupted)this.send({type:'response.cancel'});
     if(this.outputPlaying&&!serverInterrupted)this.send({type:'output_audio_buffer.clear'});
@@ -142,7 +144,7 @@ export class RealtimeGuide {
     if(done.request.kind==='tour'){
       this.completed.add(checkpointIds[done.request.checkpoint]);this.nextCheckpoint=done.request.checkpoint+1;
       this.progress(this.nextCheckpoint<tourStops.length);
-      if(this.guiding){this.state('transitioning');const epoch=this.epoch;this.advanceTimer=setTimeout(()=>{if(this.running&&epoch===this.epoch&&!this.userSpeaking)this.narrate(this.nextCheckpoint);},2200);}
+      if(this.guiding)this.narrate(this.nextCheckpoint,true);
       else this.state('listening','The story is yours now. Ask anything you’re curious about.');
     } else this.state('listening');
   }
@@ -161,6 +163,12 @@ export class RealtimeGuide {
         break;
       case 'output_audio_buffer.started':
         if(!this.running||this.responseEpoch!==this.epoch)return;
+        // Keep the scene pending across an interruption before the first spoken word.
+        const scene=this.narrationScene;
+        if(scene&&!scene.started&&this.tour.context().checkpoint===checkpointIds[scene.checkpoint]&&this.tour.context().graphicsAvailable){
+          this.tour.demonstrate(tourStops[scene.checkpoint].animation);scene.started=true;
+        }
+        this.tour.resumeScene();
         this.outputPlaying=true;if(this.output)this.output.muted=false;this.state('speaking');break;
       case 'output_audio_buffer.stopped':
         this.outputPlaying=false;if(event.response_id)this.playbackEnded.add(event.response_id);
@@ -186,6 +194,7 @@ export class RealtimeGuide {
               const result=current?await executeGuideTool(this.tour,call.name,call.arguments):{ok:false,error:'Visitor interrupted this action.'};
               if(generation!==this.generation)return;
               this.send({type:'conversation.item.create',item:{type:'function_call_output',call_id:call.call_id,output:JSON.stringify(result)}});
+              if(result.ok&&call.name==='play_animation'&&this.narrationScene)this.narrationScene.started=true;
               if(result.ok&&'control' in result)control=result.control;
               if(result.ok&&'checkpoint' in result)checkpoint=result.checkpoint;
             }
@@ -194,7 +203,7 @@ export class RealtimeGuide {
             if(checkpoint||control==='continue'){
               // A guide may continue after a question, but cannot recursively advance its own narration.
               if(request.kind==='question'||checkpoint){const index=checkpoint?checkpointIds.indexOf(checkpoint):this.nextCheckpoint;
-                if(index<tourStops.length){this.nextCheckpoint=index;this.tour.selectCheckpoint(checkpointIds[index]);this.progress(true);this.request={kind:'tour',checkpoint:index,epoch:this.epoch};this.send({type:'conversation.item.create',item:{type:'message',role:'system',content:[{type:'input_text',text:this.narrationBrief(index)}]}});}
+                if(index<tourStops.length){this.nextCheckpoint=index;this.tour.selectCheckpoint(checkpointIds[index]);this.progress(true);this.narrationScene={checkpoint:index,started:false};this.request={kind:'tour',checkpoint:index,epoch:this.epoch};this.send({type:'conversation.item.create',item:{type:'message',role:'system',content:[{type:'input_text',text:this.narrationBrief(index)}]}});}
               }
             }
             this.sendView();this.respond();
@@ -235,7 +244,7 @@ export class RealtimeGuide {
     this.stream?.getTracks().forEach(t=>t.stop());this.stream=undefined;
     this.channel?.close();this.pc?.close();this.channel=undefined;this.pc=undefined;
     if(this.output){this.output.pause();this.output.srcObject=null;}this.output=undefined;
-    this.responding=false;this.toolsBusy=false;this.userSpeaking=false;this.soundBlocked=false;this.responseId=undefined;this.snapshotId=undefined;this.request=undefined;
+    this.responding=false;this.toolsBusy=false;this.userSpeaking=false;this.soundBlocked=false;this.responseId=undefined;this.snapshotId=undefined;this.request=undefined;this.narrationScene=undefined;
     this.playbackEnded.clear();this.captions.clear();this.tour.pauseScene();this.events.mic(false);this.state('idle');
   }
   private fail(detail:string){this.stop();this.state('error',detail);}

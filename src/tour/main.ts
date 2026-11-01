@@ -1,10 +1,11 @@
+import { DemonstrationPlayback } from './demonstration-playback';
 import './style.css';
 import * as T from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { createBridgeWorld } from './model';
 import { createMachinery } from './machinery';
 import { chapters, duration, chapterAt, sceneAt, stillAt, cameraAt, poses } from './timeline';
-import type { TourGuide, Feature, Demonstration } from './guide-contract';
+import type { TourGuide, Feature } from './guide-contract';
 import { tourStops, checkpointIds, type CheckpointId } from './tour-content';
 
 const $ = <E extends HTMLElement = HTMLElement>(selector: string) => document.querySelector<E>(selector)!;
@@ -25,7 +26,7 @@ $('#app').innerHTML=`
 <div class="aside-footer"><p>Your own guide.<br>Follow your curiosity.</p><button id="read" class="text-button">${svg('book')}Read the story</button></div></aside>
 <section class="experience" aria-label="Tower Bridge interactive audio guide"><div id="canvas"></div><div id="hotspots" aria-label="3D checkpoints">${tourStops.map((c,i)=>`<button class="hotspot" data-checkpoint="${i}" aria-label="3D checkpoint ${i+1}: ${c.title}"><span>${i+1}</span><small>${c.detail}</small></button>`).join('')}</div>
 <div class="era-overlay" aria-label="Historical period"><span class="era-label">PERIOD</span><strong id="era">Today</strong><span id="era-detail">The bridge you see now</span></div>
-<div class="scene-heading"><div><h2 id="scene-title">A river without a crossing</h2><p id="scene-cue">Imagine the river before the bridge.</p></div></div>
+<div class="scene-heading"><div><h2 id="scene-title">${tourStops[0].title}</h2><p id="scene-cue">${tourStops[0].detail}</p></div></div>
 <div id="machinery-panel" class="machinery-panel" hidden><div class="machinery-heading"><span>POWER SYSTEM · SCHEMATIC</span><strong id="power-label">Steam-powered hydraulics</strong></div><div id="machinery-canvas"></div><div class="machine-parts" aria-label="Machinery components"><span id="machine-part-1">Boiler</span><span id="machine-part-2">Steam engine</span><span id="machine-part-3">Water pump</span></div><small id="machine-explanation">Steam drives a pump that pressurises water.</small></div>
 <div id="voice-guide-slot"></div><div id="scene-options" hidden><label><input type="checkbox" id="motion" checked> Animate scene</label></div></section></main>
 <dialog id="transcript"><div class="dialog-head"><span>STORY & SOURCES</span><button id="close" class="icon-button" aria-label="Close transcript">${svg('close')}</button></div><h2>A bridge built<br>to move.</h2>${tourStops.map((c,i)=>`<section><button class="transcript-chapter" data-checkpoint="${i}">${String(i+1).padStart(2,'0')} · ${c.title}</button><p>${c.notes}</p></section>`).join('')}<h3>From Tower Bridge’s own history</h3><ul>${sources.map(([label,url])=>`<li><a href="${url}" target="_blank" rel="noreferrer">${label}</a></li>`).join('')}</ul><p class="disclosure">The construction sequence, surrounding buildings, ship and timing are illustrative, not a survey or a recreation of a particular voyage. Colours are approximate. The opening is accelerated to fit the story. Your guide’s voice and words are AI generated. Microphone audio and the current scene are shared with OpenAI only during your live session. No webcam or location is shared.</p></dialog>`;
@@ -35,11 +36,11 @@ let animate=!reduced.matches, follow=true, active=0, ready=false, destroyed=fals
 let renderer:T.WebGLRenderer|undefined, camera:T.PerspectiveCamera|undefined, controls:OrbitControls|undefined, world:ReturnType<typeof createBridgeWorld>|undefined;
 let worldScene:T.Scene|undefined, outline:T.Box3Helper|undefined;
 let selectedFeature:Feature|null=null, visualTime=duration-.2;
-let demo:{name:Demonstration;start:number;end:number;began:number}|null=null;
+let demo:DemonstrationPlayback|null=null;
 let cameraMove:{from:T.Vector3;to:T.Vector3;fromTarget:T.Vector3;target:T.Vector3;began:number}|null=null;
 let checkpointRequest:((id:CheckpointId)=>void)|undefined;
 function viewedTime(now=performance.now()) {
- if(demo){visualTime=Math.min(demo.end,demo.start+(now-demo.began)/1000);if(visualTime>=demo.end)demo=null;}
+ if(demo){visualTime=demo.time(now);if(visualTime>=demo.end)demo=null;}
  return visualTime;
 }
 $('#motion').toggleAttribute('checked',animate); $<HTMLInputElement>('#motion').checked=animate;
@@ -47,7 +48,7 @@ let machinery:ReturnType<typeof createMachinery>|undefined;
 const surface=$('#canvas');
 const hotspotButtons=[...document.querySelectorAll<HTMLButtonElement>('.hotspot')];
 let resizeObserver:ResizeObserver|undefined;
-function show3DError(message:string){$('#hotspots').hidden=true;$('#motion').setAttribute('disabled','');surface.innerHTML=`<div class="webgl-error"><h2>The story is still here.</h2><p>${message} You can listen to all four chapters or read the story notes.</p></div>`;}
+function show3DError(message:string){$('#hotspots').hidden=true;$('#motion').setAttribute('disabled','');surface.innerHTML=`<div class="webgl-error"><h2>The story is still here.</h2><p>${message} You can listen to all three chapters or read the story notes.</p></div>`;}
 function applyCamera(time:number, explicit=false){
  if(!camera||!controls||(!follow&&!explicit))return;
  const pose=animate?cameraAt(time):poses[chapterAt(time)];
@@ -93,7 +94,7 @@ try {
    if(outline?.visible&&selectedFeature==='bascules'){outline.box.makeEmpty();world.leaves.forEach(leaf=>outline!.box.expandByObject(leaf));}
    renderer.render(scene,camera);
    if(now-lastMarker>70){lastMarker=now;const w=surface.clientWidth,h=surface.clientHeight;
-     world.anchors.forEach((anchor,i)=>{vector.copy(anchor).project(camera!);const x=(vector.x*.5+.5)*w,y=(-vector.y*.5+.5)*h;
+     world.anchors.slice(1).forEach((anchor,i)=>{vector.copy(anchor).project(camera!);const x=(vector.x*.5+.5)*w,y=(-vector.y*.5+.5)*h;
        const button=hotspotButtons[i];button.hidden=vector.z< -1||vector.z>1||x<24||x>w-24||y<110||y>h-24;
        button.style.left=`${x}px`;button.style.top=`${y}px`;
      });
@@ -106,12 +107,13 @@ function sync(){
  const state=sceneAt(viewedTime());$('#era').textContent=state.era;$('#era-detail').textContent=state.period;
  $('#scene-title').textContent=tourStops[active].title;$('#scene-cue').textContent=tourStops[active].detail;
  document.querySelectorAll<HTMLElement>('[data-checkpoint]').forEach(button=>{const selected=Number(button.dataset.checkpoint)===active;button.classList.toggle('active',selected);button.setAttribute('aria-current',selected?'step':'false');});
+ document.dispatchEvent(new Event('tour:checkpoint'));
 }
 function selectCheckpoint(id:CheckpointId){
  active=checkpointIds.indexOf(id);demo=null;cameraMove=null;selectedFeature=null;if(outline)outline.visible=false;$('#machinery-panel').classList.remove('guide-highlight');
  // Construction waits at its opening frame until the guide starts the demonstration.
  // Showing its completed preset here would flash the towers before they are built.
- visualTime=[chapters[0].cues[2].start,chapters[1].start,chapters[2].cues[5].start,duration-.2][active];
+ visualTime=[chapters[1].start,chapters[2].cues[5].start,duration-.2][active];
  setFollow(true);sync();
 }
 $<HTMLInputElement>('#motion').onchange=e=>{animate=(e.target as HTMLInputElement).checked;if(!animate)demo=null;setFollow(follow);};
@@ -132,7 +134,8 @@ const featureViews:Record<Feature,{position:number[];target:number[];size:number
 export const tour:TourGuide={
  selectCheckpoint,
  onCheckpointRequest(callback){checkpointRequest=callback;},
- pauseScene(){viewedTime();demo=null;cameraMove=null;},
+ pauseScene(){viewedTime();demo?.pause(performance.now());cameraMove=null;},
+ resumeScene(){demo?.resume(performance.now());},
  context(){const state=sceneAt(viewedTime());return {landmark:'Tower Bridge',checkpoint:checkpointIds[active],chapter:tourStops[active].title,viewedPeriod:state.era,viewedDetail:state.period,selectedFeature,camera:camera?.position.toArray()??null,target:controls?.target.toArray()??null,exploring:!follow,demonstration:demo?.name??null,graphicsAvailable:ready};},
  capture(){
    if(!renderer||!camera||!worldScene||!ready)return null;
@@ -168,7 +171,8 @@ export const tour:TourGuide={
    setFollow(false);cameraMove=null;selectedFeature=null;if(outline)outline.visible=false;
    const index=name==='construction'?1:name==='bridge_opening'?2:3,c=chapters[index];
    const end=name==='power_change'?c.cues[3].start-.1:c.start+c.duration-.05;
-   demo={name,start:c.start,end,began:performance.now()};visualTime=animate?c.start:(name==='bridge_opening'?c.cues[5].start:end);if(!animate)demo=null;
+   const start=name==='construction'?c.cues[1].start:c.start;
+   demo=new DemonstrationPlayback(name,start,end,performance.now());visualTime=animate?start:(name==='bridge_opening'?c.cues[5].start:end);if(!animate)demo=null;
    applyCamera(c.start+4,true);$('#scene-cue').textContent=animate?'A closer look':'Still demonstration · reduced motion';
  },
 };

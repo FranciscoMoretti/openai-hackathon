@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { executeGuideTool, type TourGuide } from './guide-contract';
 function fixture(available=true){
- const tour:TourGuide={selectCheckpoint:vi.fn(),onCheckpointRequest:vi.fn(),pauseScene:vi.fn(),capture:()=>null,focus:vi.fn(),highlight:vi.fn(),demonstrate:vi.fn(),context:()=>({landmark:'Tower Bridge',checkpoint:'construction',chapter:'Construction',viewedPeriod:'1886',viewedDetail:'Foundations',selectedFeature:null,camera:null,target:null,exploring:true,demonstration:null,graphicsAvailable:available})};return tour;
+ const tour:TourGuide={selectCheckpoint:vi.fn(),onCheckpointRequest:vi.fn(),pauseScene:vi.fn(),resumeScene:vi.fn(),capture:()=>null,focus:vi.fn(),highlight:vi.fn(),demonstrate:vi.fn(),context:()=>({landmark:'Tower Bridge',checkpoint:'construction',chapter:'Construction',viewedPeriod:'1886',viewedDetail:'Foundations',selectedFeature:null,camera:null,target:null,exploring:true,demonstration:null,graphicsAvailable:available})};return tour;
 }
 describe('live guide scene actions',()=>{
  it('explores features without changing the story checkpoint',async()=>{

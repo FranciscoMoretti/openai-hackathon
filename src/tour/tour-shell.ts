@@ -2,6 +2,7 @@
 import './main';
 import './tour-shell.css';
 import { tour } from './main';
+import { checkpointIds } from './tour-content';
 import { mountGuide } from './guide-ui';
 import './visuals.css';
 import { mountVisualLayout } from './visual-layout';
@@ -43,23 +44,30 @@ get('#read-top').addEventListener('click', () => settings.close());
 
 const chapterSheet = document.createElement('dialog');
 chapterSheet.id = 'tour-chapters'; chapterSheet.setAttribute('aria-labelledby','tour-chapters-title');
-chapterSheet.innerHTML = `<div class="shell-sheet-heading"><h2 id="tour-chapters-title">The story</h2><button class="shell-icon" aria-label="Close chapters">${closeIcon}</button></div><p class="shell-sheet-intro">Four places in the story. Follow your guide, or choose where to go next.</p><div class="shell-chapter-content"></div>`;
+chapterSheet.innerHTML = `<div class="shell-sheet-heading"><h2 id="tour-chapters-title">Your tour</h2><button class="shell-icon" aria-label="Close chapters">${closeIcon}</button></div><div class="shell-chapter-content"></div>`;
 document.body.append(chapterSheet);
 chapterSheet.querySelector<HTMLButtonElement>('.shell-icon')!.onclick=()=>chapterSheet.close();
 const chapterNav=get('aside nav'), desktopAside=get('aside');
 const chapterButton=document.createElement('button'); chapterButton.id='tour-chapters-open';
 chapterButton.setAttribute('aria-haspopup','dialog');
-chapterButton.innerHTML=`${icon('<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>')}<span>Stops</span>`;
+chapterButton.setAttribute('aria-controls',chapterSheet.id);
+chapterButton.setAttribute('aria-expanded','false');
 header.insertBefore(chapterButton,more);
-chapterButton.onclick=()=>chapterSheet.showModal();
-chapterNav.addEventListener('click',e=>{if((e.target as Element).closest('[data-checkpoint]')&&chapterSheet.open)chapterSheet.close();});
-const compact=matchMedia('(max-width: 760px)');
-function placeChapters(){
-  if(compact.matches)chapterSheet.querySelector('.shell-chapter-content')!.append(chapterNav);
-  else {if(chapterSheet.open)chapterSheet.close();desktopAside.append(chapterNav);}
+chapterSheet.querySelector('.shell-chapter-content')!.append(chapterNav);
+desktopAside.remove();
+function updateChapterProgress(){
+  const current=checkpointIds.indexOf(tour.context().checkpoint)+1;
+  chapterButton.textContent=`${current} of ${checkpointIds.length} · Stops`;
+  chapterButton.setAttribute('aria-label',`Stop ${current} of ${checkpointIds.length}. Choose a stop`);
 }
-compact.addEventListener('change',placeChapters);placeChapters();
-window.addEventListener('resize',placeChapters);
+document.addEventListener('tour:checkpoint',updateChapterProgress);
+updateChapterProgress();
+chapterButton.onclick=()=>{
+  chapterSheet.showModal();chapterButton.setAttribute('aria-expanded','true');
+  chapterNav.querySelector<HTMLButtonElement>('[aria-current="step"]')?.focus();
+};
+chapterSheet.addEventListener('close',()=>chapterButton.setAttribute('aria-expanded','false'));
+chapterNav.addEventListener('click',e=>{if((e.target as Element).closest('[data-checkpoint]')&&chapterSheet.open)chapterSheet.close();});
 
 for(const dialog of [settings,chapterSheet])dialog.addEventListener('click',e=>{
   if(e.target!==dialog)return;

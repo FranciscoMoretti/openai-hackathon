@@ -92,7 +92,6 @@ export function mountGuide(tour:TourGuide){
  window.addEventListener('pagehide',()=>{client.stop();orb.dispose();});
  document.addEventListener('visibilitychange',()=>{if(document.hidden&&(client.isActive||client.connected))client.stop();});
  Object.assign(window,{__voiceGuide:()=>({status,guiding,microphoneOn:client.microphoneOn,connected:client.connected,checkpoint:tour.context().checkpoint,caption})});
- document.querySelector('aside')?.insertAdjacentHTML('afterbegin','<p class="checkpoint-eyebrow">YOUR TOUR <span>4 STOPS</span></p>');
  document.querySelectorAll<HTMLElement>('.chapter').forEach((button,i)=>button.setAttribute('title',`Visit ${tourStops[i].title}`));
  render();
 }

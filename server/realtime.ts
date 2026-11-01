@@ -27,9 +27,12 @@ export function realtimeHandler(options: { apiKey?: string; model?: string; fetc
       const sdp = Buffer.concat(chunks).toString('utf8');
       if (!sdp.startsWith('v=0') || !sdp.includes('m=audio')) return fail(400, 'Invalid WebRTC session offer.');
       const body = new FormData();
+      const model = options.model || 'gpt-realtime-2.1';
       body.set('sdp', sdp);
       body.set('session', JSON.stringify({
-        type: 'realtime', model: options.model || 'gpt-realtime-2.1',
+        type: 'realtime', model,
+        // These short, grounded guide turns do not need extended reasoning.
+        ...(/^gpt-realtime-2(?:[.-]|$)/.test(model) ? { reasoning: { effort: 'minimal' } } : {}),
         instructions: guideInstructions, tools: guideTools, tool_choice: 'auto',
         output_modalities: ['audio'], max_output_tokens: 800,
         audio: { input: { noise_reduction: { type: 'near_field' }, turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 600, create_response: false, interrupt_response: true } }, output: { voice: 'marin' } },
