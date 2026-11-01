@@ -1,0 +1,47 @@
+[
+  {
+    "landmark": "Big Ben",
+    "path": "/images/big-ben.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File:Elizabeth_Tower_and_the_north_front_of_the_Palace_of_Westminster,_London.jpg",
+    "author": "Christian David",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "changes": "Resized thumbnail; displayed with CSS crop."
+  },
+  {
+    "landmark": "London Eye",
+    "path": "/images/london-eye.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File:London-Eye-2009.JPG",
+    "author": "Khamtran",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "changes": "Resized thumbnail; displayed with CSS crop."
+  },
+  {
+    "landmark": "St James's Park",
+    "path": "/images/st-james-park.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File:St_James%27s_Park_Lake_%E2%80%93_East_from_the_Blue_Bridge_-_2012-10-06.jpg",
+    "author": "Colin",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "changes": "Resized thumbnail; displayed with CSS crop."
+  },
+  {
+    "landmark": "Trafalgar Square",
+    "path": "/images/trafalgar-square.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File:Trafalgar_Square,_London_2_-_Jun_2009.jpg",
+    "author": "Diliff",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "changes": "Resized thumbnail; displayed with CSS crop."
+  },
+  {
+    "landmark": "Westminster Abbey",
+    "path": "/images/westminster-abbey.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File:Westminster_Abbey,_Westminster.jpg",
+    "author": "Antiquary",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+    "changes": "Resized thumbnail; displayed with CSS crop."
+  }
+]
